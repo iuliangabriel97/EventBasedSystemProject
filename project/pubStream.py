@@ -11,7 +11,7 @@ def stringify(pg: Publication):
         if isinstance(v, datetime):
             pub_str[k] = v.strftime("%d.%m.%Y")
         else:
-            pub_str[v] = str(v)
+            pub_str[k] = str(v)
     return pub_str
 
 
@@ -35,7 +35,32 @@ class TestListener(threading.Thread):
         threading.Thread.__init__(self)
         self.redis_instance = redis_instance
         self.pubsub = self.redis_instance.pubsub()
-        self.pubsub.psubscribe(pattern)    # pot sa caut canalele dupa un pattern
+        self.pubsub.psubscribe(pattern)  # pot sa caut canalele dupa un pattern
+
+    @staticmethod
+    def _do_some_filtering(message):
+        """
+        Let's say we want to subscribe to 3 publications:
+        1. [car_model="Fiat"]
+        2. [car_model="Mercedes", horsepower = 100]
+        3. [car_model="Opel", color="green"]
+        """
+        results = []
+        test_subscriptions = [
+            {"car_model": "Fiat"},
+            {"car_model": "Mercedes", "horsepower": 100},
+            {"car_model": "Opel", "color": "green"},
+        ]
+        for ts in test_subscriptions:
+            found_filters = 0
+            for k, v in ts.items():
+                if k not in message.keys() or message[k] != ts[k]:
+                    break
+                found_filters += 1
+            if found_filters == len(ts):  # all fields match
+                results.append(ts)
+
+        return results
 
     def run(self):
         print("[LISTENER] Test if we can subscribe to the generated publications\n")
@@ -45,12 +70,17 @@ class TestListener(threading.Thread):
             if b"stop" == message["channel"] and b"stop" == message["data"]:  # asta trimit ca sa opresc executia
                 print("[LISTENER] Stopped listener")
                 break
-            print("[LISTENER] Publisher node {} published this: {}".format(message["channel"], message["data"]))
+            decoded_message = json.loads(message["data"])
+            found = self._do_some_filtering(decoded_message)
+            if found:
+                # toate fieldurile din publicatie indeplineste cerintele din macar o subscriptie, ma pot abona la ea
+                for f in found:
+                    print("The publication {} matches requirements for subscription {}".format(decoded_message, f))
 
 
 if __name__ == "__main__":
 
-    client = TestListener(redis.StrictRedis(), "*")   # pt subscribe la un anumit canal: "1"
+    client = TestListener(redis.StrictRedis(), "*")  # pt subscribe la un anumit canal: "1"
     client.start()
 
     generate_pubs_stream(3)
