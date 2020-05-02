@@ -38,7 +38,7 @@ class BrokerOverlay(object):
     def register_subscriptions(self, ch, method, properties, body):
         if len(self.registered_brokers) > 0:
             # get a random broker from the registered ones to send the event to
-            broker_id = random.choice([i for i in range(0, len(self.registered_brokers) - 1)])
+            broker_id = random.choice([i for i in range(0, len(self.registered_brokers))])
             self.subscriptions_channel.basic_publish(
                 exchange="", routing_key=self.registered_brokers[broker_id][1], properties=properties, body=body
             )

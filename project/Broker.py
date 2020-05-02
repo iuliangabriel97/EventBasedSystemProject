@@ -18,7 +18,7 @@ class Broker(object):
     def initiate_broker(self):
 
         self.channel.exchange_declare(exchange="brokers_routing_table", exchange_type="fanout")
-        result = self.channel.queue_declare(queue="", exclusive=True)
+        result = self.channel.queue_declare(queue="", exclusive=False)
 
         self.queue = result.method.queue
         brokers_props = pika.BasicProperties(app_id=self.broker_id, reply_to=self.queue)
@@ -29,7 +29,7 @@ class Broker(object):
 
     def get_subscriptions_from_overlay(self):
         self.subscriptions_channel.exchange_declare(exchange="subscriptions_routing_table", exchange_type="fanout")
-        subscriptions_result = self.subscriptions_channel.queue_declare(queue="", exclusive=True)
+        subscriptions_result = self.subscriptions_channel.queue_declare(queue="", exclusive=False)
         self.subscriptions_result_queue = subscriptions_result.method.queue
         self.subscriptions_channel.queue_bind(exchange="subscriptions_routing_table", queue=self.subscriptions_result_queue)
 
@@ -39,13 +39,12 @@ class Broker(object):
         print("Received subscription {} with id {}".format(body, props.correlation_id))
 
     def consume_subs_events(self):
-        self.subscriptions_channel.basic_qos(prefetch_count=1)
         self.subscriptions_channel.basic_consume(queue=self.queue, on_message_callback=self.subscription_event_callback, auto_ack=True)
-        self.subscriptions_channel.start_consuming()
+        # self.subscriptions_channel.start_consuming()
 
     def get_publications(self):
         self.publications_channel.exchange_declare(exchange="publications_routing_table", exchange_type="fanout")
-        publications_result = self.publications_channel.queue_declare(queue="", exclusive=True)
+        publications_result = self.publications_channel.queue_declare(queue="", exclusive=False)
         self.publications_result_queue = publications_result.method.queue
         self.publications_channel.queue_bind(exchange="publications_routing_table", queue=self.publications_result_queue)
 
@@ -56,14 +55,15 @@ class Broker(object):
 
     def consume_publ_events(self):
         self.get_publications()
-        self.publications_channel.basic_qos(prefetch_count=1)
         self.publications_channel.basic_consume(queue=self.publications_result_queue, on_message_callback=self.publication_event_callback, auto_ack=True)
-        self.publications_channel.start_consuming()
+        # self.publications_channel.start_consuming()
 
 
 b = Broker()
 try:
-    b.consume_publ_events()
     b.consume_subs_events()
+    b.consume_publ_events()
+    b.subscriptions_channel.start_consuming()
+    b.publications_channel.start_consuming()
 except KeyboardInterrupt:
     b.channel.stop_consuming()
