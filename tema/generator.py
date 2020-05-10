@@ -25,7 +25,7 @@ class Publication:
 
     # pentru afisare
     def __str__(self):
-        return '{{(car_model,"{}");(production_date,"{}");(horsepower,{});(color,"{}");(max_speed,{})}}'.format(
+        return '{{"car_model":"{}", "production_date":"{}","horsepower":{},"color":"{}","max_speed":{}}}'.format(
             self.car_model, self.production_date.strftime("%d-%m-%Y"), self.horsepower, self.color, self.max_speed
         )
 
