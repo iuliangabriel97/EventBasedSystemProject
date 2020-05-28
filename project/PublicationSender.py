@@ -16,7 +16,7 @@ class PublicationSender(object):
         self.generate_publications()
 
     def generate_publications(self):
-        pub_gen = PublicationsGenerator(publications_count=5).generate()
+        pub_gen = PublicationsGenerator(publications_count=2).generate()
         for pg in pub_gen:
             corr_id = str(uuid.uuid4())
             self.channel.basic_publish(

@@ -17,7 +17,7 @@ class SubscriptionSender(object):
         print("received matching publication")
 
     def generate_subscriptions(self):
-        sub_gen = SubscriptionsGenerator(subscriptions_count=5).generate()
+        sub_gen = SubscriptionsGenerator(subscriptions_count=1).generate()
         for sg in sub_gen:
             corr_id = str(uuid.uuid4())
             self.channel.basic_publish(
