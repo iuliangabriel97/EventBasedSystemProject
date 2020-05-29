@@ -1,0 +1,17 @@
+message FieldConfigType1{
+    required string operator = 1;
+    required string value = 2;
+}
+
+message FieldConfigType2{
+    required string operator = 1;
+    required int32 value = 2;
+}
+
+message Subscription {
+ optional FieldConfigType1 car_model = 1;
+ optional FieldConfigType1 production_date = 2;
+ optional FieldConfigType2 horsepower = 3;
+ optional FieldConfigType1 color = 4;
+ optional FieldConfigType2 max_speed = 5;
+}
