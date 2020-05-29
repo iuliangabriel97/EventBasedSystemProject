@@ -44,3 +44,5 @@ class PublicationSender(object):
 
 
 ps = PublicationSender()
+with open("Logging/logger.csv", 'a') as logging_file:
+    logging_file.write('\n')

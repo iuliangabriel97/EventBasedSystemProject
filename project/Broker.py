@@ -12,6 +12,7 @@ import time
 class Broker(object):
     def __init__(self):
         self.counter = 1
+        self.time_values = []
         self.broker_id = str(uuid.uuid4())
         self.connection = pika.BlockingConnection(pika.ConnectionParameters(host="localhost"))
         self.channel = self.connection.channel()
@@ -123,8 +124,9 @@ class Broker(object):
         )
 
     def log_to_file(self, sub_timestamp):
-        with open("Logging/logger.txt", 'a') as logging_file:
-            logging_file.write(str(self.counter) + ": " + str((datetime.now().timestamp() - sub_timestamp.timestamp()) * 1000)+'\n')
+
+        with open("Logging/logger.csv", 'a') as logging_file:
+            logging_file.write(str((datetime.now().timestamp() - sub_timestamp.timestamp()) * 1000)+', ')
         self.counter = self.counter + 1
 
 
