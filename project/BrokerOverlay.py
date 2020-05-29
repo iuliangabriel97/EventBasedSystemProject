@@ -70,6 +70,7 @@ class BrokerOverlay(object):
         return next(iter(self.registered_brokers))
 
     def register_subscriptions(self, ch, method, properties, body):
+        #TODO de trimis in batch
         if len(self.registered_brokers) > 0:
             if not self.last_broker_id:
                 # if no subscriptions where sent to any brokers, choose a random one

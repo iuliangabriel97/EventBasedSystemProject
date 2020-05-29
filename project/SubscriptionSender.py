@@ -15,11 +15,11 @@ class SubscriptionSender(object):
         self.generate_subscriptions()
 
     def on_response(self, ch, method, props, body):
-        print("Got this matching pub: {}".format(body))
+        print("Got this matching pub: {} for {}".format(body, props.correlation_id))
 
     def generate_subscriptions(self):
-        # sub_gen = SubscriptionsGenerator(subscriptions_count=1).generate()
-        sub_gen = [{"horsepower": {"operator": ">", "value": 10}}]
+        sub_gen = SubscriptionsGenerator(subscriptions_count=2).generate()
+        # sub_gen = [{"horsepower": {"operator": ">", "value": 10}}]
 
         for sg in sub_gen:
             corr_id = str(uuid.uuid4())
