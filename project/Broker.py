@@ -6,7 +6,7 @@ import pika
 import uuid
 
 from project.matching import try_match
-
+from datetime import datetime
 
 class Broker(object):
     def __init__(self):
@@ -72,16 +72,19 @@ class Broker(object):
         self.get_subscriptions_from_overlay()
         self.received_subscriptions_table.append({props.app_id: body})
         print("Received subscription {} with id {} from subscriber {}".format(body, props.correlation_id, props.app_id))
-        #TODO ce se intampla daca nu gaseste publicatia
+        # TODO ce se intampla daca nu gaseste publicatia
         if len(self.received_publications_table) > 0:
-            matching_pub = self.find_matching_pub(body)
-            if matching_pub:
-                self.subscriptions_channel.basic_publish(
-                    exchange="",
-                    routing_key=props.reply_to,    # reply to this client's queue
-                    properties=props,
-                    body=str(matching_pub),
-                )
+            matching_pubs = self.find_matching_pub(body)
+            if matching_pubs:
+                for pub in matching_pubs:
+                    self.subscriptions_channel.basic_publish(
+                        exchange="",
+                        routing_key=props.reply_to,  # reply to this client's queue
+                        properties=props,
+                        body=pub,
+                    )
+            else:
+                print("No matching pubs")
         else:
             print("Haven't received any publications yet, waiting....")
 
@@ -99,7 +102,7 @@ class Broker(object):
         )
 
     def publication_event_callback(self, cn, method, props, body):
-        print("Received publication {} with id {}".format(body, props.correlation_id))
+        print("Received publication {} with id {} and timestamp {}".format(body, props.correlation_id, datetime.fromtimestamp(props.timestamp).strftime("%d-%m-%Y %H:%M:%S")))
 
         self.received_publications_table.append(body)
 

@@ -1,7 +1,10 @@
 import pika
 import uuid
+from datetime import datetime
+import logging
 
 from tema.generator import PublicationsGenerator
+from publication_pb2 import Publication
 
 
 class PublicationSender(object):
@@ -12,24 +15,30 @@ class PublicationSender(object):
         result = self.channel.queue_declare(queue="", exclusive=True)
         self.callback_queue = result.method.queue
         self.generate_publications()
+        # self.logger = logging.getLogger()
 
     def generate_publications(self):
-        # pub_gen = PublicationsGenerator(publications_count=2).generate()
+        pub_gen = PublicationsGenerator(publications_count=2).generate()
 
-        pub_gen = [{"car_model": "Opel", "production_date": "01-01-1990", "horsepower": 223, "color": "white",
-                    "max_speed": 50}]
-
-        for pg in pub_gen:
+        for pub in pub_gen:
+            publication = Publication()
+            publication.car_model = pub.car_model
+            publication.production_date = datetime.strftime(pub.production_date, "%d-%m-%Y")
+            publication.max_speed = pub.max_speed
+            publication.horsepower = pub.horsepower
+            publication.color = pub.color
             corr_id = str(uuid.uuid4())
             self.channel.basic_publish(
                 exchange="publications_routing_table",
                 routing_key="",
                 properties=pika.BasicProperties(
-                    content_type="application/json", reply_to=self.callback_queue, correlation_id=corr_id,
+                    timestamp=int(datetime.now().timestamp()),
+                    reply_to=self.callback_queue, correlation_id=corr_id,
                 ),
-                body=str(pg),
+                body=publication.SerializeToString(),
             )
-            print("Sent publication {} with id {}".format(str(pg), corr_id))
+            print("Sent publication {} with id {}".format(str(pub), corr_id))
+            # self.logger.debug("Sent publication {} with id {}".format(str(pub), corr_id))
 
         self.connection.close()
 
