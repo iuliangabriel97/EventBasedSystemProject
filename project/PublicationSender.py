@@ -18,7 +18,7 @@ class PublicationSender(object):
         # self.logger = logging.getLogger()
 
     def generate_publications(self):
-        pub_gen = PublicationsGenerator(publications_count=2).generate()
+        pub_gen = PublicationsGenerator(publications_count=5).generate()
 
         for pub in pub_gen:
             publication = Publication()
