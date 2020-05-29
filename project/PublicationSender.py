@@ -1,5 +1,3 @@
-from datetime import datetime
-
 import pika
 import uuid
 
@@ -17,6 +15,7 @@ class PublicationSender(object):
 
     def generate_publications(self):
         pub_gen = PublicationsGenerator(publications_count=2).generate()
+
         for pg in pub_gen:
             corr_id = str(uuid.uuid4())
             self.channel.basic_publish(
