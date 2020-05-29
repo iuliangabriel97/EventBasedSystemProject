@@ -18,8 +18,7 @@ class SubscriptionSender(object):
         print("Got this matching pub: {}".format(body))
 
     def generate_subscriptions(self):
-        # sub_gen = SubscriptionsGenerator(subscriptions_count=1).generate()
-        sub_gen = [{"horsepower": {"operator": ">", "value": 10}}]
+        sub_gen = SubscriptionsGenerator(subscriptions_count=3).generate()
 
         for sg in sub_gen:
             corr_id = str(uuid.uuid4())
