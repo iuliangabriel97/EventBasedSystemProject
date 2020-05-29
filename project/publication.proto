@@ -4,4 +4,5 @@ message Publication {
  required int32 horsepower = 3;
  required string color = 4;
  required int32 max_speed = 5;
+ optional int32 ts = 6;
 }

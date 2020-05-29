@@ -35,15 +35,12 @@ def try_match(list_of_pubs, sub):
     sub = google.protobuf.json_format.MessageToDict(s)
     mandatory_fields = sub.keys()
 
-    print("sub {}".format(sub))
     for pub in list_of_pubs:
         found_sub_fields = 0
         p = Publication()
         p.ParseFromString(pub)
         pub = google.protobuf.json_format.MessageToDict(p)
-        print("pub {}".format(pub))
         if not set(mandatory_fields).issubset(pub.keys()):
-            print("pub {} doesn't have all the fields in the sub!".format(pub))
             continue
         for pub_k, pub_v in pub.items():
             if pub_k not in mandatory_fields:
@@ -58,11 +55,9 @@ def try_match(list_of_pubs, sub):
             publication.max_speed = pub.get("max_speed", 0)
             publication.horsepower = pub.get("horsepower", 0)
             publication.color = pub.get("color", "")
+            publication.ts = pub["ts"]
             matching_pubs.append(publication.SerializeToString())
 
-    print("matching_pubs {}".format(matching_pubs))
     return matching_pubs
 
 
-if __name__ == '__main__':
-    print("Start")

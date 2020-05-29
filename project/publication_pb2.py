@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   syntax='proto2',
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_pb=b'\n\x11publication.proto\"o\n\x0bPublication\x12\x11\n\tcar_model\x18\x01 \x02(\t\x12\x17\n\x0fproduction_date\x18\x02 \x02(\t\x12\x12\n\nhorsepower\x18\x03 \x02(\x05\x12\r\n\x05\x63olor\x18\x04 \x02(\t\x12\x11\n\tmax_speed\x18\x05 \x02(\x05'
+  serialized_pb=b'\n\x11publication.proto\"{\n\x0bPublication\x12\x11\n\tcar_model\x18\x01 \x02(\t\x12\x17\n\x0fproduction_date\x18\x02 \x02(\t\x12\x12\n\nhorsepower\x18\x03 \x02(\x05\x12\r\n\x05\x63olor\x18\x04 \x02(\t\x12\x11\n\tmax_speed\x18\x05 \x02(\x05\x12\n\n\x02ts\x18\x06 \x01(\x05'
 )
 
 
@@ -68,6 +68,13 @@ _PUBLICATION = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='ts', full_name='Publication.ts', index=5,
+      number=6, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
   ],
   extensions=[
   ],
@@ -81,7 +88,7 @@ _PUBLICATION = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=21,
-  serialized_end=132,
+  serialized_end=144,
 )
 
 DESCRIPTOR.message_types_by_name['Publication'] = _PUBLICATION
