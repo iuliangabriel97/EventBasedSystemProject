@@ -1,7 +1,11 @@
+#!/usr/bin/env python3
+
 import json
 import random
 import pika
 import uuid
+
+from project.matching import try_match
 
 
 class Broker(object):
@@ -61,9 +65,8 @@ class Broker(object):
         )
 
     def find_matching_pub(self, current_subscription):
-        print("Lets choose a random pub for now")
-        random_pub = random.choice([i for i in self.received_publications_table])
-        return random_pub
+        found_pub = try_match(self.received_publications_table, current_subscription)
+        return found_pub
 
     def subscription_event_callback(self, cn, method, props, body):
         self.get_subscriptions_from_overlay()
@@ -77,7 +80,7 @@ class Broker(object):
                     exchange="",
                     routing_key=props.reply_to,    # reply to this client's queue
                     properties=props,
-                    body=matching_pub,
+                    body=str(matching_pub),
                 )
         else:
             print("Haven't received any publications yet, waiting....")

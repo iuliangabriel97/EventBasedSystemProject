@@ -14,7 +14,8 @@ class PublicationSender(object):
         self.generate_publications()
 
     def generate_publications(self):
-        pub_gen = PublicationsGenerator(publications_count=2).generate()
+        # pub_gen = PublicationsGenerator(publications_count=2).generate()
+        pub_gen = [{"car_model":"Opel", "production_date":"01-01-1990","horsepower":223,"color":"white","max_speed":50}]
 
         for pg in pub_gen:
             corr_id = str(uuid.uuid4())
