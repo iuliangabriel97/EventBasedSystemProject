@@ -25,7 +25,7 @@ class SubscriptionSender(object):
         # self.logger.debug("Got this matching pub: {} for {}".format(body, props.correlation_id))
 
     def generate_subscriptions(self):
-        sub_gen = SubscriptionsGenerator(subscriptions_count=2).generate()
+        sub_gen = SubscriptionsGenerator(subscriptions_count=10).generate()
 
         for sub in sub_gen:
             subscription = Subscription()

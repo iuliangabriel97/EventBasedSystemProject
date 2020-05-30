@@ -7,9 +7,12 @@ import uuid
 
 from project.matching import try_match
 from datetime import datetime
+import time
 
 class Broker(object):
     def __init__(self):
+        self.counter = 1
+        self.time_values = []
         self.broker_id = str(uuid.uuid4())
         self.connection = pika.BlockingConnection(pika.ConnectionParameters(host="localhost"))
         self.channel = self.connection.channel()
@@ -103,7 +106,7 @@ class Broker(object):
 
     def publication_event_callback(self, cn, method, props, body):
         print("Received publication {} with id {} and timestamp {}".format(body, props.correlation_id, datetime.fromtimestamp(props.timestamp).strftime("%d-%m-%Y %H:%M:%S")))
-
+        self.log_to_file(datetime.fromtimestamp(props.timestamp))
         self.received_publications_table.append(body)
 
     def consume_publ_events(self):
@@ -119,6 +122,12 @@ class Broker(object):
             properties=pika.BasicProperties(app_id=self.broker_id, reply_to=self.queue),
             body="BYE",
         )
+
+    def log_to_file(self, sub_timestamp):
+
+        with open("Logging/logger.csv", 'a') as logging_file:
+            logging_file.write(str((datetime.now().timestamp() - sub_timestamp.timestamp()) * 1000)+', ')
+        self.counter = self.counter + 1
 
 
 b = Broker()
