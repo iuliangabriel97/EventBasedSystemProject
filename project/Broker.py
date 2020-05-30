@@ -75,7 +75,6 @@ class Broker(object):
         self.get_subscriptions_from_overlay()
         self.received_subscriptions_table.append({props.app_id: body})
         print("Received subscription {} with id {} from subscriber {}".format(body, props.correlation_id, props.app_id))
-        # TODO ce se intampla daca nu gaseste publicatia
         if len(self.received_publications_table) > 0:
             matching_pubs = self.find_matching_pub(body)
             if matching_pubs:
@@ -86,6 +85,7 @@ class Broker(object):
                         properties=props,
                         body=pub,
                     )
+                self.received_publications_table.clear() #to avoid duplicates
             else:
                 print("No matching pubs")
         else:

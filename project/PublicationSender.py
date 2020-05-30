@@ -18,7 +18,8 @@ class PublicationSender(object):
         # self.logger = logging.getLogger()
 
     def generate_publications(self):
-        pub_gen = PublicationsGenerator(publications_count=5).generate()
+
+        pub_gen = PublicationsGenerator(publications_count=50).generate()
 
         for pub in pub_gen:
             publication = Publication()
@@ -27,6 +28,7 @@ class PublicationSender(object):
             publication.max_speed = pub.max_speed
             publication.horsepower = pub.horsepower
             publication.color = pub.color
+            publication.ts = int(datetime.now().timestamp())
             corr_id = str(uuid.uuid4())
             self.channel.basic_publish(
                 exchange="publications_routing_table",
