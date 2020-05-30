@@ -1,13 +1,20 @@
 import pika
 import uuid
 from datetime import datetime
+import os
 import logging
+import logging.config
 
 from tema.generator import PublicationsGenerator
 from publication_pb2 import Publication
 
+ROOT_DIRECTORY = os.path.abspath(os.path.join(__file__, os.pardir))
+LOGGING_CONFIG_DIR = os.path.join(ROOT_DIRECTORY, 'loggers')
+
 class PublicationSender(object):
     def __init__(self):
+        logging.config.fileConfig(os.path.join(LOGGING_CONFIG_DIR, "PublicationSender.conf"))
+        self._logger = logging.getLogger("PublicationSender")
         self.connection = pika.BlockingConnection(pika.ConnectionParameters(host="localhost"))
         self.channel = self.connection.channel()
         self.channel.exchange_declare(exchange="publications_routing_table", exchange_type="fanout")
@@ -39,7 +46,7 @@ class PublicationSender(object):
                 body=publication.SerializeToString(),
             )
             print("Sent publication {} with id {}".format(str(pub), corr_id))
-            # self.logger.debug("Sent publication {} with id {}".format(str(pub), corr_id))
+            self._logger.info("Sent publication {} with id {}".format(str(pub), corr_id))
 
         self.connection.close()
 

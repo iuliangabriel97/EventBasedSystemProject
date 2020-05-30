@@ -1,14 +1,20 @@
 import pika
 import uuid
 from datetime import datetime
+import os
 
 from tema.generator import SubscriptionsGenerator
 from subscription_pb2 import Subscription
 import logging
+import logging.config
 
+ROOT_DIRECTORY = os.path.abspath(os.path.join(__file__, os.pardir))
+LOGGING_CONFIG_DIR = os.path.join(ROOT_DIRECTORY, 'loggers')
 
 class SubscriptionSender(object):
     def __init__(self):
+        logging.config.fileConfig(os.path.join(LOGGING_CONFIG_DIR, "SubscriptionSender.conf"))
+        self._logger = logging.getLogger("SubscriptionSender")
         self._id = str(uuid.uuid4())
         self.connection = pika.BlockingConnection(pika.ConnectionParameters(host="localhost"))
         self.channel = self.connection.channel()
@@ -16,13 +22,13 @@ class SubscriptionSender(object):
         result = self.channel.queue_declare(queue="", exclusive=True)
         self.callback_queue = result.method.queue
         self.generate_subscriptions()
-        self.logger = logging.getLogger()
+
 
     def on_response(self, ch, method, props, body):
         pub = Subscription()
         # pub.Parse
         print("Got this matching pub: {} for {} with timestamp {}".format(body, props.correlation_id, datetime.fromtimestamp(props.timestamp).strftime("%d-%m-%Y %H:%M:%S")))
-        # self.logger.debug("Got this matching pub: {} for {}".format(body, props.correlation_id))
+        self._logger.info("Got this matching pub: {} for {}".format(body, props.correlation_id))
         with open("Logging/pub_recv_logger.csv", 'a') as logging_file:
             logging_file.write(str(props.timestamp)+', ')
 
@@ -60,7 +66,7 @@ class SubscriptionSender(object):
                 body=subscription.SerializeToString(),
             )
             print("Sent subscription {} with id {}".format(subscription, corr_id))
-            # self.logger.debug("Sent subscription with id {}".format(corr_id))
+            self._logger.info("Sent subscription with id {}".format(corr_id))
 
     def consume_event(self):
         self.channel.basic_consume(queue=self.callback_queue, on_message_callback=self.on_response, auto_ack=True)

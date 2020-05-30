@@ -4,9 +4,16 @@ import json
 import random
 import pika
 import uuid
+import logging
+import logging.config
+import os
 
 from project.matching import try_match
 from datetime import datetime
+
+ROOT_DIRECTORY = os.path.abspath(os.path.join(__file__, os.pardir))
+LOGGING_CONFIG_DIR = os.path.join(ROOT_DIRECTORY, 'loggers')
+
 
 class Broker(object):
     def __init__(self):
@@ -25,7 +32,8 @@ class Broker(object):
         self.get_subscriptions_from_overlay()
 
     def initiate_broker(self):
-
+        logging.config.fileConfig(os.path.join(LOGGING_CONFIG_DIR, "Broker.conf"))
+        self._logger = logging.getLogger("Broker")
         self.channel.exchange_declare(exchange="brokers_routing_table", exchange_type="fanout")
         result = self.channel.queue_declare(queue="", exclusive=True)
 
@@ -35,6 +43,7 @@ class Broker(object):
             exchange="brokers_routing_table", routing_key="", properties=brokers_props, body="REGISTER"
         )
         print("Registered broker with id {} in the overlay".format(self.broker_id))
+        self._logger.info("Registered broker with id {} in the overlay".format(self.broker_id))
 
         self.channel.exchange_declare(exchange="neighbours_notification", exchange_type="direct")
         result = self.channel.queue_declare(queue="", exclusive=True)
@@ -84,7 +93,7 @@ class Broker(object):
                         properties=props,
                         body=pub,
                     )
-                self.received_publications_table.clear() #to avoid duplicates
+                self.received_publications_table.clear()  # to avoid duplicates
             else:
                 print("No matching pubs")
         else:
@@ -104,7 +113,10 @@ class Broker(object):
         )
 
     def publication_event_callback(self, cn, method, props, body):
-        print("Received publication {} with id {} and timestamp {}".format(body, props.correlation_id, datetime.fromtimestamp(props.timestamp).strftime("%d-%m-%Y %H:%M:%S")))
+        print("Received publication {} with id {} and timestamp {}".format(body, props.correlation_id,
+                                                                           datetime.fromtimestamp(
+                                                                               props.timestamp).strftime(
+                                                                               "%d-%m-%Y %H:%M:%S")))
         self.log_to_file(datetime.fromtimestamp(props.timestamp))
         self.received_publications_table.append(body)
 
@@ -125,7 +137,7 @@ class Broker(object):
     def log_to_file(self, sub_timestamp):
         with open("Logging/pub_start_logger.csv", 'a') as logging_file:
             pub_time = (datetime.now().timestamp() - sub_timestamp.timestamp()) * 1000
-            logging_file.write(str(int(sub_timestamp.timestamp()))+', ')
+            logging_file.write(str(int(sub_timestamp.timestamp())) + ', ')
         self.counter = self.counter + 1
 
 

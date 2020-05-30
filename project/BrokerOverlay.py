@@ -1,6 +1,11 @@
 import random
 import pika
+import os
+import logging
+import logging.config
 
+ROOT_DIRECTORY = os.path.abspath(os.path.join(__file__, os.pardir))
+LOGGING_CONFIG_DIR = os.path.join(ROOT_DIRECTORY, 'loggers')
 
 class BrokerOverlay(object):
     def __init__(self):
@@ -16,6 +21,10 @@ class BrokerOverlay(object):
         """
         Subscribers connect to the broker overlay randomly and register 10.000 subscriptions -> fanout exchange type
         """
+
+        logging.config.fileConfig(os.path.join(LOGGING_CONFIG_DIR, "BrokerOverlay.conf"))
+        self._logger = logging.getLogger("BrokerOverlay")
+
         connection = pika.BlockingConnection(pika.ConnectionParameters(host="localhost"))
 
         self.brokers_channel = connection.channel()
@@ -37,6 +46,7 @@ class BrokerOverlay(object):
         broker_queue_name = properties.reply_to
         if body == b"REGISTER":
             print("Broker with id {} was registered".format(broker_id))
+            self._logger.info("Broker with id {} was registered".format(broker_id))
             self.registered_brokers[broker_id] = broker_queue_name
 
             if len(self.registered_brokers.keys()) > 1:
