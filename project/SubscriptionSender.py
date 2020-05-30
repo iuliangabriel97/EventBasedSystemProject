@@ -23,9 +23,11 @@ class SubscriptionSender(object):
         # pub.Parse
         print("Got this matching pub: {} for {} with timestamp {}".format(body, props.correlation_id, datetime.fromtimestamp(props.timestamp).strftime("%d-%m-%Y %H:%M:%S")))
         # self.logger.debug("Got this matching pub: {} for {}".format(body, props.correlation_id))
+        with open("Logging/pub_recv_logger.csv", 'a') as logging_file:
+            logging_file.write(str(props.timestamp)+', ')
 
     def generate_subscriptions(self):
-        sub_gen = SubscriptionsGenerator(subscriptions_count=5).generate()
+        sub_gen = SubscriptionsGenerator(subscriptions_count=10).generate()
 
         for sub in sub_gen:
             subscription = Subscription()
@@ -51,9 +53,9 @@ class SubscriptionSender(object):
                 routing_key="",
                 properties=pika.BasicProperties(
                     reply_to=self.callback_queue,
-                    timestamp = int(datetime.now().timestamp()),
                     correlation_id=corr_id,
                     app_id=self._id,
+                    timestamp=int(datetime.now().timestamp()),
                 ),
                 body=subscription.SerializeToString(),
             )
@@ -65,7 +67,7 @@ class SubscriptionSender(object):
         self.channel.basic_qos(prefetch_count=1)
         self.channel.start_consuming()
 
-
+open('Logging/pub_recv_logger.csv', 'w').close()
 ps = SubscriptionSender()
 try:
     ps.consume_event()

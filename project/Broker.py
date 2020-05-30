@@ -7,7 +7,6 @@ import uuid
 
 from project.matching import try_match
 from datetime import datetime
-import time
 
 class Broker(object):
     def __init__(self):
@@ -124,9 +123,9 @@ class Broker(object):
         )
 
     def log_to_file(self, sub_timestamp):
-
-        with open("Logging/logger.csv", 'a') as logging_file:
-            logging_file.write(str((datetime.now().timestamp() - sub_timestamp.timestamp()) * 1000)+', ')
+        with open("Logging/pub_start_logger.csv", 'a') as logging_file:
+            pub_time = (datetime.now().timestamp() - sub_timestamp.timestamp()) * 1000
+            logging_file.write(str(int(sub_timestamp.timestamp()))+', ')
         self.counter = self.counter + 1
 
 

@@ -6,7 +6,6 @@ import logging
 from tema.generator import PublicationsGenerator
 from publication_pb2 import Publication
 
-
 class PublicationSender(object):
     def __init__(self):
         self.connection = pika.BlockingConnection(pika.ConnectionParameters(host="localhost"))
@@ -19,7 +18,7 @@ class PublicationSender(object):
 
     def generate_publications(self):
 
-        pub_gen = PublicationsGenerator(publications_count=10).generate()
+        pub_gen = PublicationsGenerator(publications_count=50).generate()
 
         for pub in pub_gen:
             publication = Publication()
@@ -44,7 +43,8 @@ class PublicationSender(object):
 
         self.connection.close()
 
-
+open('Logging/pub_start_logger.csv', 'w').close()
 ps = PublicationSender()
-with open("Logging/logger.csv", 'a') as logging_file:
+with open("Logging/pub_start_logger.csv", 'a') as logging_file:
     logging_file.write('\n')
+
