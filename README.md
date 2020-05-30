@@ -10,3 +10,6 @@ Publicatie: {(company,"Google");(value,90.0);(drop,10.0);(variation,0.73);(date,
 Subscriptie:{(company,=,"Google");(value,>=,90);(variation,<,0.8)} - Unele campuri pot lipsi; frecventa campurilor prezente trebuie sa fie configurabila (ex. 90% company - 90% din subscriptiile generate trebuie sa includa campul "company"); pentru campul cu domeniul cel mai mic (ex. company e definit ca avand valori intr-o multime de doar 5 companii) se poate configura un minim de frecventa pentru operatorul "=" (ex. macar 90% din subscriptiile generate sa aiba ca operator pe acest camp egalitatea). Nota: cazul in care suma procentelor configurate pentru campuri e mai mica decat 100 reprezinta o situatie de exceptie care nu e necesar sa fie tratata. (pentru testare se vor folosi intotdeauna valori de procentaj ce sunt egale sau depasesc 100 ca suma)
 
 Setul generat va fi memorat in fisiere text.
+
+Graf latenta medie de livrare a publicatilor:
+https://docs.google.com/spreadsheets/d/1HkdJMrNBsnAiTA2lLxUAy0P_Yh5Jb-aeADU5frC0LH4/edit#gid=1587825126
