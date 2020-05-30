@@ -19,7 +19,7 @@ class PublicationSender(object):
 
     def generate_publications(self):
 
-        pub_gen = PublicationsGenerator(publications_count=50).generate()
+        pub_gen = PublicationsGenerator(publications_count=10).generate()
 
         for pub in pub_gen:
             publication = Publication()

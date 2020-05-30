@@ -25,7 +25,7 @@ class SubscriptionSender(object):
         # self.logger.debug("Got this matching pub: {} for {}".format(body, props.correlation_id))
 
     def generate_subscriptions(self):
-        sub_gen = SubscriptionsGenerator(subscriptions_count=10).generate()
+        sub_gen = SubscriptionsGenerator(subscriptions_count=5).generate()
 
         for sub in sub_gen:
             subscription = Subscription()
@@ -51,6 +51,7 @@ class SubscriptionSender(object):
                 routing_key="",
                 properties=pika.BasicProperties(
                     reply_to=self.callback_queue,
+                    timestamp = int(datetime.now().timestamp()),
                     correlation_id=corr_id,
                     app_id=self._id,
                 ),
