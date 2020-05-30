@@ -11,6 +11,7 @@ import logging.config
 ROOT_DIRECTORY = os.path.abspath(os.path.join(__file__, os.pardir))
 LOGGING_CONFIG_DIR = os.path.join(ROOT_DIRECTORY, 'loggers')
 
+
 class SubscriptionSender(object):
     def __init__(self):
         logging.config.fileConfig(os.path.join(LOGGING_CONFIG_DIR, "SubscriptionSender.conf"))

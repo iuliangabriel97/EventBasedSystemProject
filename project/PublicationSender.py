@@ -1,6 +1,6 @@
 import pika
 import uuid
-from datetime import datetime
+import datetime
 import os
 import logging
 import logging.config
@@ -10,6 +10,7 @@ from publication_pb2 import Publication
 
 ROOT_DIRECTORY = os.path.abspath(os.path.join(__file__, os.pardir))
 LOGGING_CONFIG_DIR = os.path.join(ROOT_DIRECTORY, 'loggers')
+
 
 class PublicationSender(object):
     def __init__(self):
@@ -25,30 +26,37 @@ class PublicationSender(object):
 
     def generate_publications(self):
 
-        pub_gen = PublicationsGenerator(publications_count=50).generate()
+        start = datetime.datetime.now()
+        stop = start + datetime.timedelta(minutes=1)
 
-        for pub in pub_gen:
-            publication = Publication()
-            publication.car_model = pub.car_model
-            publication.production_date = datetime.strftime(pub.production_date, "%d-%m-%Y")
-            publication.max_speed = pub.max_speed
-            publication.horsepower = pub.horsepower
-            publication.color = pub.color
-            publication.ts = int(datetime.now().timestamp())
-            corr_id = str(uuid.uuid4())
-            self.channel.basic_publish(
-                exchange="publications_routing_table",
-                routing_key="",
-                properties=pika.BasicProperties(
-                    timestamp=int(datetime.now().timestamp()),
-                    reply_to=self.callback_queue, correlation_id=corr_id,
-                ),
-                body=publication.SerializeToString(),
-            )
-            print("Sent publication {} with id {}".format(str(pub), corr_id))
-            self._logger.info("Sent publication {} with id {}".format(str(pub), corr_id))
+        while 1:
+            pub_gen = PublicationsGenerator(publications_count=50).generate()
 
-        self.connection.close()
+            for pub in pub_gen:
+                publication = Publication()
+                publication.car_model = pub.car_model
+                publication.production_date = datetime.datetime.strftime(pub.production_date, "%d-%m-%Y")
+                publication.max_speed = pub.max_speed
+                publication.horsepower = pub.horsepower
+                publication.color = pub.color
+                publication.ts = int(datetime.datetime.now().timestamp())
+                corr_id = str(uuid.uuid4())
+                self.channel.basic_publish(
+                    exchange="publications_routing_table",
+                    routing_key="",
+                    properties=pika.BasicProperties(
+                        timestamp=int(datetime.datetime.now().timestamp()),
+                        reply_to=self.callback_queue, correlation_id=corr_id,
+                    ),
+                    body=publication.SerializeToString(),
+                )
+                print("Sent publication {} with id {}".format(str(pub), corr_id))
+                self._logger.info("Sent publication {} with id {}".format(str(pub), corr_id))
+
+            if stop <= datetime.datetime.now():
+                self.connection.close()
+                break
+
 
 open('Logging/pub_start_logger.csv', 'w').close()
 ps = PublicationSender()

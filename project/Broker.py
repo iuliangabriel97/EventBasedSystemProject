@@ -25,7 +25,8 @@ class Broker(object):
         self.subscriptions_channel = self.connection.channel()
         self.publications_channel = self.connection.channel()
         self.queue = None
-        self.received_subscriptions_table = []
+        self.queue_result = None
+        self.unmatched_subscriptions = []
         self.received_publications_table = []
         self.neighbours = dict()
         self.initiate_broker()
@@ -35,9 +36,9 @@ class Broker(object):
         logging.config.fileConfig(os.path.join(LOGGING_CONFIG_DIR, "Broker.conf"))
         self._logger = logging.getLogger("Broker")
         self.channel.exchange_declare(exchange="brokers_routing_table", exchange_type="fanout")
-        result = self.channel.queue_declare(queue="", exclusive=True)
+        self.queue_result = self.channel.queue_declare(queue="", exclusive=True)
 
-        self.queue = result.method.queue
+        self.queue = self.queue_result.method.queue
         brokers_props = pika.BasicProperties(app_id=self.broker_id, reply_to=self.queue)
         self.channel.basic_publish(
             exchange="brokers_routing_table", routing_key="", properties=brokers_props, body="REGISTER"
@@ -75,16 +76,16 @@ class Broker(object):
             exchange="subscriptions_routing_table", queue=self.subscriptions_result_queue
         )
 
-    def find_matching_pub(self, current_subscription):
-        found_pub = try_match(self.received_publications_table, current_subscription)
-        return found_pub
+    def find_matching_pubs(self, current_subscription):
+        found_pubs = try_match(self.received_publications_table, current_subscription)
+        return found_pubs
 
     def subscription_event_callback(self, cn, method, props, body):
         self.get_subscriptions_from_overlay()
-        self.received_subscriptions_table.append({props.app_id: body})
         print("Received subscription {} with id {} from subscriber {}".format(body, props.correlation_id, props.app_id))
+
         if len(self.received_publications_table) > 0:
-            matching_pubs = self.find_matching_pub(body)
+            matching_pubs = self.find_matching_pubs(body)
             if matching_pubs:
                 for pub in matching_pubs:
                     self.subscriptions_channel.basic_publish(
@@ -93,9 +94,9 @@ class Broker(object):
                         properties=props,
                         body=pub,
                     )
-                self.received_publications_table.clear()  # to avoid duplicates
             else:
-                print("No matching pubs")
+                print("No matching pubs now :(")
+                self.unmatched_subscriptions.append({"body": body, "props": props})
         else:
             print("Haven't received any publications yet, waiting....")
 
@@ -103,6 +104,11 @@ class Broker(object):
         self.subscriptions_channel.basic_consume(
             queue=self.queue, on_message_callback=self.subscription_event_callback, auto_ack=True
         )
+        # if the queue is empty (all events were consumed and we have unmatched subscriptions, try to match them again:
+        if self.queue_result.method.message_count == 0 and len(self.unmatched_subscriptions) > 0:
+            for us in self.unmatched_subscriptions:
+                self.subscription_event_callback(cn=None, method=None, props=us["props"], body=us["body"])
+
 
     def get_publications(self):
         self.publications_channel.exchange_declare(exchange="publications_routing_table", exchange_type="fanout")
@@ -127,6 +133,14 @@ class Broker(object):
         )
 
     def send_stop_notification(self):
+        if len(self.unmatched_subscriptions) > 0:
+            # send the publications with no matches to a neighbour before closing:
+            for us in self.unmatched_subscriptions:
+                neighbour = random.choice([i for i in self.neighbours.keys()])
+                self.subscriptions_channel.basic_publish(
+                    exchange="", routing_key=self.neighbours[neighbour], properties=us["props"], body=us["body"]
+                )
+        # send the notification to broker overlay:
         self.channel.basic_publish(
             exchange="brokers_routing_table",
             routing_key="",
