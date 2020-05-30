@@ -13,3 +13,15 @@ Setul generat va fi memorat in fisiere text.
 
 Graf latenta medie de livrare a publicatilor:
 https://docs.google.com/spreadsheets/d/1HkdJMrNBsnAiTA2lLxUAy0P_Yh5Jb-aeADU5frC0LH4/edit#gid=1587825126
+
+Proiect:
+Limbaj de programare: Python
+Tehnologie folosita: RabbitMQ
+
+Desrierea solutiei:
+Proiectul simuleaza o retea overlay de brokeri prin intermediul clasei BrokeOverlay care actioneaza pe post de routing manager. Acesta inregistreaza atat brokerii activi cat si vecinii acestora.  Instantele de Brokeri active primesc un id unic si sunt adaugate la reteaua overlay.
+Clasa PublicationSender genereaza un numar dat de publicatii si le trimite catre BrokerOverlay folosing un exchange de tip fanout, urmand ca Overlay sa trimita publicatiile catre toti brokerii inregistrati.
+Clasa SubscriptionSender genereaza un numar dat de subscriptii care sunt trimise catre BrokerOverlay. BrokerOverlay trimite subscriptiile catre brokeri (fanout exchange). Prin intermediul clasei Matching apelata din Broker, sunt filtrate publicatiile care mai apoi sunt trimise catre subscriber (in cazul in care exista match-uri).
+
+
+
